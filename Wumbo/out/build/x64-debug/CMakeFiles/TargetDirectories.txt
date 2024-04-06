@@ -1,0 +1,5 @@
+C:/Users/micha/Documents2/_active-classes/project-wumbo/Wumbo/out/build/x64-debug/CMakeFiles/edit_cache.dir
+C:/Users/micha/Documents2/_active-classes/project-wumbo/Wumbo/out/build/x64-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/micha/Documents2/_active-classes/project-wumbo/Wumbo/out/build/x64-debug/Wumbo/CMakeFiles/Wumbo.dir
+C:/Users/micha/Documents2/_active-classes/project-wumbo/Wumbo/out/build/x64-debug/Wumbo/CMakeFiles/edit_cache.dir
+C:/Users/micha/Documents2/_active-classes/project-wumbo/Wumbo/out/build/x64-debug/Wumbo/CMakeFiles/rebuild_cache.dir
