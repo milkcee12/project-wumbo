@@ -1,3 +1,4 @@
+track,time,channel_event,channel_num,midi_note,velocity,ignore
 0, 0, Header, 0, 1, 384
 1, 0, Start_track
 1, 0, Time_signature, 4, 2, 24, 8
