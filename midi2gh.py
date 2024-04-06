@@ -1,7 +1,10 @@
 import pandas as pd
+
 # go into output_files format, and open the csv file
 filename = 'Mary_Output_1'
 filepath_in = 'output_files/' + filename + '.csv'
+
+DYN_NOTE_COUNT = 5
 
 # open the csv file into a pandas dataframe
 midi_df = pd.read_csv(filepath_in)
@@ -50,6 +53,17 @@ gh_df['piano_freq'] = (2**((gh_df['piano_note'] - 49) / 12)) * 440
 # round all piano frequencies to integers
 gh_df['piano_freq'] = gh_df['piano_freq'].round(0)
 
+# determine the range of the piano notes in gh_df from column piano_note
+piano_note_min = gh_df['piano_note'].min()
+piano_note_max = gh_df['piano_note'].max()
+piano_note_range = int(piano_note_max) - int(piano_note_min)
+
+# print the range of the piano notes in gh_df from column piano_note
+print ("\nPiano Note Range:", piano_note_min, "to", piano_note_max)
+print ("Piano Range of", piano_note_range, "Notes")
+
+# map the number of notes in piano_note_range to 5 dynamically assignable notes in column dynamic_note
+gh_df['dynamic_note'] = gh_df['piano_note'].map(lambda x: (x - piano_note_min) % DYN_NOTE_COUNT + 1)
 
 #########################
 ### PRINTING NEW FILE ### 
@@ -65,3 +79,6 @@ print(gh_df) # each row represents a midi event
 filepath_out = 'output_files/' + filename + '_gh.csv'
 gh_df.to_csv(filepath_out, index=False)
 print ("\nExported to: " + filepath_out)
+
+# (1) Add "strumming" 
+# (2) Conversion 
