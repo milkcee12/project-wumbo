@@ -12,7 +12,7 @@ MusicNote::MusicNote(Game* game, float start, float duration, int button, int fr
 	frequency_ = frequency;
 	pianoNote_ = pianoNote;
 
-	float height = (Game::BUTTON_WIDTH) * (duration * 4);
+	float height = (Game::BUTTON_WIDTH) * (duration * 3);
 	setSize(Coord2(Game::BUTTON_WIDTH, height));
 	setPosition(Coord2(game_->buttons_[button_]->getPosition().x, -height / 2));
 	rectComponent_ = new RectComponent(this, game_->buttonColors[button_]);

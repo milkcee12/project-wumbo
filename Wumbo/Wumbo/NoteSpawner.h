@@ -28,8 +28,8 @@ public:
 	int frequencyLookup_[88];
 	int buttonFrequencies_[Game::NUM_BUTTONS];
 
-	std::string song = "AllOfMe";
-	const int TICKS_PER_SECOND = 960;
+	std::string song = "SomeoneElse";
+	const int TICKS_PER_SECOND = 760;
 
 	int lastPlayed = 0;
 
