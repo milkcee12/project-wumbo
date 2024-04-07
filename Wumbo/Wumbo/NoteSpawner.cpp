@@ -13,6 +13,9 @@
 NoteSpawner::NoteSpawner(Game* game)
 	: Actor(game)
 {
+	song = std::get<std::string>(game_->songMap_[game_->currSong_]);
+	TICKS_PER_SECOND = std::get<int>(game_->songMap_[game_->currSong_]);
+
 	std::string csvFile = std::format("C:\\Users\\micha\\Documents2\\_active-classes\\project-wumbo\\Wumbo\\Wumbo\\Assets\\Levels\\{}.csv", song);
 	loadNotesFromCsv(csvFile);
 
@@ -48,7 +51,7 @@ void NoteSpawner::onUpdate(float deltaTime)
 		SDL_Log("Time to start the song!!");
 		soundStarted_ = true;
 		int channel = Mix_PlayChannel(-1, chunk_, 0);
-		Mix_Volume(channel, 128);
+		Mix_Volume(channel, MIX_MAX_VOLUME);
 	}
 
 	while (!waitingNotes_.empty() && waitingNotes_.front()->startTime_ + 0.12f <= timer_)
@@ -103,6 +106,7 @@ void NoteSpawner::onUpdate(float deltaTime)
 				game_->score_ += 1;
 				game_->scoreText_->writeMessage(std::to_string(game_->score_) + "/" + std::to_string(game_->total_));
 
+				// WUMBO COMBO
 				if (game_->score_ > 0 && game_->score_ % 20 == 0)
 				{
 					SDL_Log("COMBO");

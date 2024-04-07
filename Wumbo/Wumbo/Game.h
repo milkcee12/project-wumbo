@@ -4,6 +4,9 @@
 #include <vector>
 #include "RGBColor.h"
 #include "mosquittopp.h"
+#include <unordered_map>
+#include <tuple>
+#include <string>
 
 class Game {
 public:
@@ -30,6 +33,10 @@ public:
 	static const int NUM_BUTTONS = 4;
 	static const int BUTTON_WIDTH = 120;
 	static const int BUTTON_GAP = 170;
+
+	std::unordered_map<std::string, std::tuple<std::string, int>> songMap_;
+	std::string currSong_ = "Someone Else";
+	//std::string currSong_ = "All of Me";
 
 	std::vector<class TextUI*> textUis_;
 

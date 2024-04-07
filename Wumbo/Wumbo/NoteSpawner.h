@@ -29,7 +29,7 @@ public:
 	int buttonFrequencies_[Game::NUM_BUTTONS];
 
 	std::string song = "SomeoneElse";
-	const int TICKS_PER_SECOND = 760;
+	int TICKS_PER_SECOND = 760;
 
 	int lastPlayed = 0;
 

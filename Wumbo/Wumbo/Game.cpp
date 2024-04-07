@@ -28,6 +28,11 @@ Game::Game()
 
 	bgColor_ = RGBColor(28, 28, 28);
 	stringColor_ = RGBColor(45, 45, 45);
+
+
+	songMap_.insert({ "Mary Had a Little Lamb", { "MaryHadALittleLamb", 352 } });
+	songMap_.insert({ "Someone Else", { "SomeoneElse", 760 } });
+	songMap_.insert({ "All of Me", { "AllOfMe", 960 } });
 }
 
 void Game::runLoop()
@@ -72,7 +77,7 @@ void Game::loadData()
 
 	songTitleText_ = new TextUI(this);
 	songTitleText_->setPosition(Coord2(100.0f, 50.0f));
-	songTitleText_->writeMessage("All of Me");
+	songTitleText_->writeMessage(currSong_);
 
 	scoreText_ = new TextUI(this);
 	scoreText_->setPosition(Coord2(100.0f, 120.0f));
