@@ -109,12 +109,8 @@ def publish(client):
             print(f"Failed to send message to topic {topic}")
 
         # sleep in milliseconds
-        print(curr_note_duration)
-        print(type(curr_note_duration))
-        if curr_note_duration != '0.0':
-            note_duration = int(curr_note_duration) / int(SONG_TICKS_PER_SECONDS[SONG_NUM])
-        else: 
-            note_duration = .500
+        curr_note_duration = int(round(float(curr_note_duration)))            
+        note_duration = int(curr_note_duration) / int(SONG_TICKS_PER_SECONDS[SONG_NUM])
         time.sleep(note_duration)
          
 def subscribe(client: mqtt_client):

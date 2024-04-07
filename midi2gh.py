@@ -106,7 +106,7 @@ gh_df['dynamic_note'] = gh_df['piano_note'].map(mapped_piano_notes)
 # for only rows with a value of " Note_on_c" for header "channel_event"
 # create a new column "duration" which is the difference between the current row's "time" and the next row's "time"
 if ' Note_on_c' in gh_df['channel_event'].values:
-    gh_df['tick_duration'] = round(gh_df['start_tick'].shift(-1) - gh_df['start_tick'])
+    gh_df['tick_duration'] = gh_df['start_tick'].shift(-1) - gh_df['start_tick']
 else:
     gh_df['tick_duration'] = int(0)
 
