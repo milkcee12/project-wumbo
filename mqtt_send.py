@@ -3,12 +3,20 @@ import logging
 import random
 import time
 import pandas as pd
+import sys
 
 # Logging, Constants
 FIRST_RECONNECT_DELAY = 1
 RECONNECT_RATE = 2
 MAX_RECONNECT_COUNT = 12
 MAX_RECONNECT_DELAY = 60
+DYN_NOTE_COUNT = 4
+
+# ref: https://en.wikipedia.org/wiki/Piano_key_frequencies
+# create a giant freq_lookup table mapping piano notes (1 to 88) to their frequencies. piano notes represented as index + 1
+FREQ_LOOKUP_TABLE = [round((2**((i - 49) / 12)) * 440) for i in range(88)] # 88 piano notes mapped to their frequencies
+# print(FREQ_LOOKUP_TABLE)
+# print(FREQ_LOOKUP_TABLE[49]) # verify that A4 is 440 Hz
 
 # Credentials
 broker = 'broker.emqx.io'
@@ -43,10 +51,13 @@ def connect_mqtt():
 
 def publish(client):
     # open output_files Mary_Output_1_gh.csv
-    filename = 'Mary_Output_1_gh.csv'
+    filename = 'All_Of_Me_gh.csv'
     filepath_in = 'output_files/' + filename
     csv_headers = ['start_tick', 'channel_event', 'midi_note', 'piano_note', 'piano_freq', 'dynamic_note', 'tick_duration', 'end_tick']
     midi_gh = pd.read_csv(filepath_in, names=csv_headers)
+
+    # create DYN_NOTE_COUNT size array to represent frequencies of the 4 buttons
+    dynamic_button_freqs = [0] * DYN_NOTE_COUNT
 
     # for each line in midi_gf, send a message to MQTT PUBLISH TOPIC
     for index, row in midi_gh.iterrows():
@@ -54,13 +65,36 @@ def publish(client):
 
         # send a message to MQTT PUBLISH TOPIC
         time.sleep(1)
-        # create a MQTT message of the current row's piano_freq and the next 3 rows piano freqs
-        msg = str(row['piano_freq']) + ',' + str(midi_gh.iloc[index + 1]['piano_freq']) + ',' + str(midi_gh.iloc[index + 2]['piano_freq']) + ',' + str(midi_gh.iloc[index + 3]['piano_freq'])
-        result = client.publish(topic, msg)
+
+        # get current row frequency
+        curr_freq = row['piano_freq']
+
+        # find the curr_freq's index in the FREQ_LOOKUP_TABLE
+        freq_lookup_table_idx = FREQ_LOOKUP_TABLE.index(curr_freq)
+
+        # get current row dynamic_button assignment
+        curr_dynamic_btn_assignment = row['dynamic_note'] # current button assignment
+
+        # curr_dynamic_btn_assignment is a value from 0 to 3 and represents an index of dynamic_button_freqs
+        # curr_dynamic_btn_assignment maps to freq_lookup_table_idx, so the value at dynamic_button_freqs[curr_dynamic_btn_assignment] should be curr_freq
+        # map the other index 
+        for i in range(curr_dynamic_btn_assignment, 4):
+            dynamic_button_freqs[i] = FREQ_LOOKUP_TABLE[freq_lookup_table_idx + i - curr_dynamic_btn_assignment]
+        for i in range(0, curr_dynamic_btn_assignment):
+            dynamic_button_freqs[i] = FREQ_LOOKUP_TABLE[freq_lookup_table_idx - curr_dynamic_btn_assignment + i]
+
+        # get current row note duration
+        curr_note_duration = row['tick_duration']
+
+        # send current_row piano_freq + (3) fake piano_freq + note_duration
+        note_msg = str(dynamic_button_freqs[0]) + ',' + str(dynamic_button_freqs[1]) + ',' + str(dynamic_button_freqs[2]) + ',' + str(dynamic_button_freqs[3]) + ',' + str(curr_note_duration)
+        print("note_msg: ", note_msg)
+
+        result = client.publish(topic, note_msg)
         # result: [0, 1]
         status = result[0]
         if status == 0:
-            print(f"Send `{msg}` to topic `{topic}`")
+            print(f"Send `{note_msg}` to topic `{topic}`")
         else:
             print(f"Failed to send message to topic {topic}")
          
