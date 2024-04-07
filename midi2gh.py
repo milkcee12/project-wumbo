@@ -2,7 +2,7 @@ import pandas as pd
 import sys
 
 # go into output_files format, and open the csv file
-filename = 'Someone_Else'
+filename = 'All_Of_Me'
 filepath_in = 'output_files/' + filename + '.csv'
 
 DYN_NOTE_COUNT = 4
