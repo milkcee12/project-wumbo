@@ -89,10 +89,10 @@ def publish(client):
         # curr_dynamic_btn_assignment maps to freq_lookup_table_idx, so the value at dynamic_button_freqs[curr_dynamic_btn_assignment] should be curr_freq
         # map the other index 
         btn_index = int(curr_dynamic_btn_assignment)
-        for i in range(btn_index, 4):
-            dynamic_button_freqs[i] = FREQ_LOOKUP_TABLE[freq_lookup_table_idx + i - btn_index]
         for i in range(0, btn_index):
             dynamic_button_freqs[i] = FREQ_LOOKUP_TABLE[freq_lookup_table_idx - btn_index + i]
+        for i in range(btn_index, 4):
+            dynamic_button_freqs[i] = FREQ_LOOKUP_TABLE[freq_lookup_table_idx + i - btn_index]
 
         # get current row note duration
         curr_note_duration = row['tick_duration']
