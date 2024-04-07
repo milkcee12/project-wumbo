@@ -16,7 +16,7 @@ public:
 	Actor(class Game* game);
 	virtual ~Actor();
 
-	void input(const Uint8* keyState);
+	void input(const Uint8* keyState, const char* buttonState, const char* currButton);
 	void update(float deltaTime);
 
 	// Getters/setters
@@ -28,6 +28,8 @@ public:
 	void setSize(Coord2 size) { size_ = size; }
 	ActorState getState() const { return state_; }
 	void setState(ActorState state) { state_ = state; }
+
+	bool intersect(Actor* other);
 
 	class Game* getGame() { return game_; }
 
@@ -46,7 +48,7 @@ public:
 	}
 
 protected:
-	virtual void onInput(const Uint8* keyState);
+	virtual void onInput(const Uint8* keyState, const char* buttonState, const char* currButton);
 	virtual void onUpdate(float deltaTime);
 	Coord2 position_ = Coord2(0.0f, 0.0f);
 	ActorState state_ = ActorState::Active;

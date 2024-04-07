@@ -5,7 +5,7 @@
 class Button : public Actor
 {
 public:
-	Button(class Game* game, Coord2 pos, struct Color color);
+	Button(class Game* game, Coord2 pos, class RGBColor color);
 	~Button();
 
 	class RectComponent* rectComponent_;

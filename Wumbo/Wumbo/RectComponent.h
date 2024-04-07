@@ -1,20 +1,12 @@
 #pragma once
 #include "Component.h"
 #include "Physics.h"
-
-struct Color {
-	Uint8 r_ = 0;
-	Uint8 g_ = 0;
-	Uint8 b_ = 0;
-
-	Color() {};
-	Color(Uint8 r, Uint8 g, Uint8 b) : r_(r), g_(g), b_(b) {};
-};
+#include "RGBColor.h"
 
 class RectComponent : public Component {
 public:
 	RectComponent(class Actor* owner, int drawOrder = 100);
-	RectComponent(class Actor* owner, Color color, int drawOrder = 100);
+	RectComponent(class Actor* owner, class RGBColor color, int drawOrder = 100);
 	~RectComponent();
 
 	void draw(SDL_Renderer* renderer);
@@ -26,7 +18,7 @@ public:
 	const Coord2& getSize() { return size_; }
 	void setSize(Coord2 size) { size_ = size; }
 
-	Color color_;
+	RGBColor color_;
 
 private:
 	Coord2 size_;

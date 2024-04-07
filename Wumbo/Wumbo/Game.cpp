@@ -1,28 +1,41 @@
 #include "Game.h"
 #include <algorithm>
 #include "Actor.h"
-#include "SDL_image.h"
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 #include "Physics.h"
 #include "Button.h"
-
-const Color buttonColors[Game::NUM_BUTTONS] = {
-	Color(0, 255	, 0),
-	Color(255, 0, 0),
-	Color(0, 0, 255),
-	Color(252, 186, 3),
-	Color(255, 255, 255)
-};
+#include "TextUI.h"
+#include "RectComponent.h"
+#include "RGBColor.h"
+#include "NoteSpawner.h"
+#include <SDL_mixer.h>
+#include "mosquittopp.h"
+#include "MqttJoystick.h"
+#include "MqttButtons.h"
 
 Game::Game()
+	: songTitleText_(nullptr),
+	scoreText_(nullptr),
+	score_(0),
+	noteSpawner_(nullptr),
+	mqtt_joy(nullptr),
+	mqtt_button(nullptr),
+	mqtt_publish(nullptr)
 {
-	bgColor_ = Color(28, 28, 28);
-	stringColor_ = Color(45, 45, 45);
+	for (int i = 0; i < NUM_BUTTONS; i++)
+		buttons_[i] = nullptr;
+
+	bgColor_ = RGBColor(28, 28, 28);
+	stringColor_ = RGBColor(45, 45, 45);
 }
 
 void Game::runLoop()
 {
 	while (loopRunning_)
 	{
+		mqtt_joy->loop();
+		mqtt_button->loop();
 		input();
 		update();
 		render();
@@ -44,22 +57,45 @@ void Game::loadData()
 	background->setPosition(Coord2(static_cast<float>(WINDOW_W) / 2, static_cast<float>(WINDOW_H) / 2));
 	RectComponent* bgFill = new RectComponent(background, bgColor_, 50);
 
-	int margin = (WINDOW_W - ((NUM_BUTTONS - 1) * BUTTON_GAP)) / 2;
+	float margin = (WINDOW_W - ((NUM_BUTTONS - 1) * BUTTON_GAP)) / 2.0f;
 	for (int i = 0; i < NUM_BUTTONS; i++)
 	{
-		Coord2 pos = Coord2(margin + BUTTON_GAP * i, WINDOW_H - 100);
+		Coord2 pos = Coord2(margin + BUTTON_GAP * i, static_cast<float>(WINDOW_H - 100));
 
 		RectComponent* string = new RectComponent(background, stringColor_, 51);
 		string->setPosition(Coord2(pos.x, WINDOW_H / 2.0f));
 		string->setSize(Coord2(5.0f, static_cast<float>(WINDOW_H)));
 
 		Button* button = new Button(this, pos, buttonColors[i]);
-		buttons_.push_back(button);
+		buttons_[i] = button;
 	}
+
+	songTitleText_ = new TextUI(this);
+	songTitleText_->setPosition(Coord2(100.0f, 50.0f));
+	songTitleText_->writeMessage("All of Me");
+
+	scoreText_ = new TextUI(this);
+	scoreText_->setPosition(Coord2(100.0f, 120.0f));
+	scoreText_->writeMessage("0/?");
+
+	textUis_.push_back(songTitleText_);
+	textUis_.push_back(scoreText_);
+
+	noteSpawner_ = new NoteSpawner(this);
 }
 
 void Game::unloadData()
-{}
+{
+	if (mqtt_joy) {
+		delete mqtt_joy;
+	}
+	if (mqtt_button)
+		delete mqtt_button;
+
+	if (mqtt_publish)
+		delete mqtt_publish;
+	mosqpp::lib_cleanup();
+}
 
 void Game::input()
 {
@@ -81,6 +117,11 @@ void Game::input()
 	{
 		loopRunning_ = false;
 	}
+
+	std::vector<Actor*> actorCopy = actors_;
+	for (Actor* actor : actorCopy)
+		actor->input(keyState, buttonState, currButton);
+
 }
 
 void Game::update()
@@ -112,6 +153,14 @@ void Game::update()
 
 	for (Actor* actor : actorsToDestroy)
 		delete actor;
+
+	/*refresh -= deltaTime;
+	if (refresh <= 0.0f)
+	{
+		buttonState = nullptr;
+		currButton = nullptr;
+		refresh = REFRESH_TIME;
+	}*/
 }
 
 void Game::render()
@@ -122,6 +171,12 @@ void Game::render()
 	{
 		if (it->isVisible())
 			it->draw(renderer_);
+	}
+
+	for (TextUI* text : textUis_)
+	{
+		if (text)
+			text->render();
 	}
 
 	SDL_RenderPresent(renderer_);
@@ -154,6 +209,12 @@ void Game::init()
 			SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
 		IMG_Init(IMG_INIT_PNG);
+		TTF_Init();
+
+		Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+
+		initMqtt();
+
 		loadData();
 
 		if (window_ && renderer_)
@@ -163,9 +224,27 @@ void Game::init()
 	}
 }
 
+void Game::initMqtt()
+{
+	const char* user = "emqs";
+	const char* pass = "public";
+
+	mosqpp::lib_init();
+
+	mqtt_joy = new MqttJoystick("mqtt_joy", this);
+	mqtt_button = new MqttButtons("mqtt_buttons", this);
+	mqtt_publish = new mosqpp::mosquittopp("mqtt_publish", this);
+
+	mqtt_joy->connect(HOST, PORT, 0);
+	mqtt_button->connect(HOST, PORT, 0);
+	mqtt_publish->connect(HOST, PORT, 0);
+}
+
 void Game::shutdown()
 {
 	IMG_Quit();
+	Mix_HaltChannel(-1);
+	Mix_CloseAudio();
 	unloadData();
 	SDL_DestroyRenderer(renderer_);
 	SDL_DestroyWindow(window_);

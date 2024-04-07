@@ -13,7 +13,7 @@ RectComponent::RectComponent(Actor* owner, int drawOrder)
 	owner_->getGame()->addSprite(this);
 }
 
-RectComponent::RectComponent(Actor* owner, Color color, int drawOrder)
+RectComponent::RectComponent(Actor* owner, RGBColor color, int drawOrder)
 	: Component(owner)
 	, drawOrder_(drawOrder)
 	, isVisible_(true)
