@@ -58,12 +58,18 @@ piano_note_min = gh_df['piano_note'].min()
 piano_note_max = gh_df['piano_note'].max()
 piano_note_range = int(piano_note_max) - int(piano_note_min)
 
-# print the range of the piano notes in gh_df from column piano_note
-print ("\nPiano Note Range:", piano_note_min, "to", piano_note_max)
-print ("Piano Range of", piano_note_range, "Notes")
+# create a list of the unique piano notes played
+piano_notes_list = gh_df['piano_note'].unique()
+number_unique_piano_notes = gh_df['piano_note'].nunique()
 
-# map the number of notes in piano_note_range to 5 dynamically assignable notes in column dynamic_note
-gh_df['dynamic_note'] = gh_df['piano_note'].map(lambda x: (x - piano_note_min) % DYN_NOTE_COUNT + 1)
+# reverse piano_notes_list (notes are now highest to lowest)
+piano_notes_list_reversed = piano_notes_list[::-1]
+
+# map each note in piano_notes_list to DYN_NOTE_COUNT dynamically assignable notes in column dynamic_note
+mapped_piano_notes = dict(zip(piano_notes_list_reversed, range(1, DYN_NOTE_COUNT + 1)))
+
+# for each midi event in gh_df, assign a dynamic_note based on the mapped_piano_notes assignment
+gh_df['dynamic_note'] = gh_df['piano_note'].map(mapped_piano_notes)
 
 #########################
 ### PRINTING NEW FILE ### 
@@ -74,6 +80,11 @@ gh_df = gh_df.fillna('*~*')
 
 print ("\nNew Start of MIDI File:") # each row represents a midi event
 print(gh_df) # each row represents a midi event
+
+# print the range of the piano notes in gh_df from column piano_note
+print ("\nPiano Note Range:", piano_note_min, "to", piano_note_max)
+print ("Piano Range of", piano_note_range, "Notes")
+print ("Number of Unique Piano Notes:", number_unique_piano_notes)
 
 # export to csv in output_files directory
 filepath_out = 'output_files/' + filename + '_gh.csv'
