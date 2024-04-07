@@ -5,7 +5,7 @@ import sys
 filename = 'All_Of_Me'
 filepath_in = 'output_files/' + filename + '.csv'
 
-DYN_NOTE_COUNT = 5
+DYN_NOTE_COUNT = 4
 
 # open the csv file into a pandas dataframe with columns [track,time,channel_event,channel_num,midi_note,velocity,ignore]
 csv_headers = ['track', 'time', 'channel_event', 'channel_num', 'midi_note', 'velocity', 'ignore', 'ignore_2']
@@ -15,16 +15,12 @@ print ("\nStart of MIDI File:") # each row represents a midi event
 print (midi_df.head()) # each row represents a midi event
 
 # drop all rows from midi_df that are not 'Start_track', ' Note_on_c', ' Note_off_c', ' End_track'
-midi_df = midi_df[(midi_df['channel_event'] == ' Start_track') | 
-                  (midi_df['channel_event'] == ' Note_on_c') | 
-                  (midi_df['channel_event'] == ' Note_off_c') | 
-                  (midi_df['channel_event'] == ' End_track')]
+midi_df = midi_df[(midi_df['channel_event'] == ' Note_on_c') | 
+                  (midi_df['channel_event'] == ' Note_off_c')]
 
 # move all other rows to metadata_df
-metadata_df = midi_df[(midi_df['channel_event'] != ' Start_track') &
-                        (midi_df['channel_event'] != ' Note_on_c') & 
-                        (midi_df['channel_event'] != ' Note_off_c') & 
-                        (midi_df['channel_event'] != ' End_track')]
+metadata_df = midi_df[(midi_df['channel_event'] != ' Note_on_c') & 
+                        (midi_df['channel_event'] != ' Note_off_c')]
 
 # print metadata_df
 print ("\nMetadata:")
@@ -65,6 +61,10 @@ piano_note_range = int(piano_note_max) - int(piano_note_min)
 
 # create a list of the unique piano notes played
 piano_notes_list = gh_df['piano_note'].unique()
+
+# sort the list of unique piano notes played from lowest to highest
+piano_notes_list.sort()
+
 number_unique_piano_notes = gh_df['piano_note'].nunique()
 
 ## FIX THIS ENTIRE SECTION ##
@@ -75,13 +75,13 @@ piano_notes_list_reversed = piano_notes_list[::-1]
 # map each note in piano_notes_list to DYN_NOTE_COUNT dynamically assignable notes in column dynamic_note
 # for each unique note in piano_notes_list_reversed, assign a value from 1 to DYN_NOTE_COUNT via modulo DYN_NOTE_COUNT into dict mapped_piano_notes
 mapped_piano_notes = {}
-for i, note in enumerate(piano_notes_list):
-    mapped_piano_notes[note] = piano_notes_list_reversed[i] % DYN_NOTE_COUNT + 1
+curr_dyn_note = DYN_NOTE_COUNT - 1
+for unique_note in piano_notes_list_reversed:
+    mapped_piano_notes[unique_note] = curr_dyn_note
+    curr_dyn_note = (curr_dyn_note - 1) % DYN_NOTE_COUNT
 
 # add a value of mapped_piano_notes to map "*~*" to "*~*" (for the START and END MIDI events)
 mapped_piano_notes['*~*'] = '*~*'
-mapped_piano_notes['nan'] = '*~*'
-mapped_piano_notes["NaN"] = '*~*'
 
 print(gh_df)
 print(piano_notes_list_reversed)
@@ -104,6 +104,9 @@ gh_df = gh_df[gh_df['channel_event'] != ' Note_off_c']
 # start_tick of row A + tick_duration of row A SHOULD equal start_tick of row B
 # create a new column "end_tick" which is the sum of the current row's "start_tick" and "tick_duration"
 gh_df['end_tick'] = gh_df['start_tick'] + gh_df['tick_duration']
+
+# rename all the channel_event values to "note_played"
+gh_df['channel_event'] = 'note_played'
 
 #########################
 ### PRINTING NEW FILE ### 
