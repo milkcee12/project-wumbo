@@ -73,9 +73,6 @@ def publish(client):
         if index == 0:
             continue
 
-        # sleep in milliseconds
-        time.sleep(0.500)
-
         # get current row frequency
         curr_freq = row['piano_freq']
         curr_freq = int(curr_freq)
@@ -110,6 +107,15 @@ def publish(client):
             print(f"Send `{note_msg}` to topic `{topic}`")
         else:
             print(f"Failed to send message to topic {topic}")
+
+        # sleep in milliseconds
+        print(curr_note_duration)
+        print(type(curr_note_duration))
+        if curr_note_duration != '0.0':
+            note_duration = int(curr_note_duration) / int(SONG_TICKS_PER_SECONDS[SONG_NUM])
+        else: 
+            note_duration = .500
+        time.sleep(note_duration)
          
 def subscribe(client: mqtt_client):
     def on_message(client, userdata, msg):
