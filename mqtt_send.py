@@ -10,14 +10,15 @@ FIRST_RECONNECT_DELAY = 1
 RECONNECT_RATE = 2
 MAX_RECONNECT_COUNT = 12
 MAX_RECONNECT_DELAY = 60
-DYN_NOTE_COUNT = 4
 
+DYN_NOTE_COUNT = 4
+TICK_MODIFIER = 0.3
 
 # Song [0] Mary Had a Little Lamb
 # Song [1] All of Me (John Legend)
-SONG_TICKS_PER_SECONDS = [352, 960]
-filename = 'All_Of_Me_gh'
-SONG_NUM = 1
+SONG_TICKS_PER_SECONDS = [352*TICK_MODIFIER, 960*TICK_MODIFIER, 760*TICK_MODIFIER]
+filename = 'Someone_Else_gh'
+SONG_NUM = 2
 
 
 # ref: https://en.wikipedia.org/wiki/Piano_key_frequencies
@@ -67,7 +68,7 @@ def publish(client):
 
     # for each line in midi_gf, send a message to MQTT PUBLISH TOPIC
     for index, row in midi_gh.iterrows():
-        print(row['start_tick'], row['channel_event'], row['midi_note'], row['piano_note'], row['piano_freq'], row['dynamic_note'], row['tick_duration'], row['end_tick'])
+        # print(row['start_tick'], row['channel_event'], row['midi_note'], row['piano_note'], row['piano_freq'], row['dynamic_note'], row['tick_duration'], row['end_tick'])
 
         # ignore first row (bc they are headers)
         if index == 0:
@@ -95,9 +96,10 @@ def publish(client):
 
         # get current row note duration
         curr_note_duration = row['tick_duration']
+        curr_note_duration = int(int(round(float(curr_note_duration))) * TICK_MODIFIER)
 
         # send current_row piano_freq + (3) fake piano_freq + note_duration
-        note_msg = str(dynamic_button_freqs[0]) + ',' + str(dynamic_button_freqs[1]) + ',' + str(dynamic_button_freqs[2]) + ',' + str(dynamic_button_freqs[3]) + ',' + str(curr_note_duration) + ',' + str(SONG_TICKS_PER_SECONDS[SONG_NUM])
+        note_msg = str(dynamic_button_freqs[0]) + ',' + str(dynamic_button_freqs[1]) + ',' + str(dynamic_button_freqs[2]) + ',' + str(dynamic_button_freqs[3]) + ',' + str(curr_note_duration) + ',' + str(SONG_TICKS_PER_SECONDS[SONG_NUM]) + ','
         print("note_msg: ", note_msg)
 
         result = client.publish(topic, note_msg)
@@ -108,8 +110,7 @@ def publish(client):
         else:
             print(f"Failed to send message to topic {topic}")
 
-        # sleep in milliseconds
-        curr_note_duration = int(round(float(curr_note_duration)))            
+        # sleep in milliseconds            
         note_duration = int(curr_note_duration) / int(SONG_TICKS_PER_SECONDS[SONG_NUM])
         time.sleep(note_duration)
          
