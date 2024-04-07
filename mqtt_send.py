@@ -12,7 +12,12 @@ MAX_RECONNECT_COUNT = 12
 MAX_RECONNECT_DELAY = 60
 DYN_NOTE_COUNT = 4
 
+
+# Song [0] Mary Had a Little Lamb
+# Song [1] All of Me (John Legend)
+SONG_TICKS_PER_SECONDS = [352, 960]
 filename = 'All_Of_Me_gh'
+SONG_NUM = 1
 
 
 # ref: https://en.wikipedia.org/wiki/Piano_key_frequencies
@@ -95,7 +100,7 @@ def publish(client):
         curr_note_duration = row['tick_duration']
 
         # send current_row piano_freq + (3) fake piano_freq + note_duration
-        note_msg = str(dynamic_button_freqs[0]) + ',' + str(dynamic_button_freqs[1]) + ',' + str(dynamic_button_freqs[2]) + ',' + str(dynamic_button_freqs[3]) + ',' + str(curr_note_duration)
+        note_msg = str(dynamic_button_freqs[0]) + ',' + str(dynamic_button_freqs[1]) + ',' + str(dynamic_button_freqs[2]) + ',' + str(dynamic_button_freqs[3]) + ',' + str(curr_note_duration) + ',' + str(SONG_TICKS_PER_SECONDS[SONG_NUM])
         print("note_msg: ", note_msg)
 
         result = client.publish(topic, note_msg)
