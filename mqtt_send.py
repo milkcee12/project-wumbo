@@ -15,7 +15,7 @@ DYN_NOTE_COUNT = 4
 # ref: https://en.wikipedia.org/wiki/Piano_key_frequencies
 # create a giant freq_lookup table mapping piano notes (1 to 88) to their frequencies. piano notes represented as index + 1
 FREQ_LOOKUP_TABLE = [round((2**((i - 49) / 12)) * 440) for i in range(88)] # 88 piano notes mapped to their frequencies
-# print(FREQ_LOOKUP_TABLE)
+print(FREQ_LOOKUP_TABLE)
 # print(FREQ_LOOKUP_TABLE[49]) # verify that A4 is 440 Hz
 
 # Credentials
@@ -61,7 +61,11 @@ def publish(client):
 
     # for each line in midi_gf, send a message to MQTT PUBLISH TOPIC
     for index, row in midi_gh.iterrows():
+        # ignore first row (bc they are headers)
         print(row['start_tick'], row['channel_event'], row['midi_note'], row['piano_note'], row['piano_freq'], row['dynamic_note'], row['tick_duration'], row['end_tick'])
+
+        if index == 0:
+            continue
 
         # send a message to MQTT PUBLISH TOPIC
         time.sleep(1)

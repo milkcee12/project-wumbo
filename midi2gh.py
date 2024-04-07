@@ -6,6 +6,8 @@ filename = 'All_Of_Me'
 filepath_in = 'output_files/' + filename + '.csv'
 
 DYN_NOTE_COUNT = 4
+FREQ_LOOKUP_TABLE = [round((2**((i - 49) / 12)) * 440) for i in range(88)] # 88 piano notes mapped to their frequencies
+# range(88) means that we use values from 0 to 87, and a index represents (piano note - 1)
 
 # open the csv file into a pandas dataframe with columns [track,time,channel_event,channel_num,midi_note,velocity,ignore]
 csv_headers = ['track', 'time', 'channel_event', 'channel_num', 'midi_note', 'velocity', 'ignore', 'ignore_2']
@@ -49,10 +51,20 @@ gh_df['midi_note'] = gh_df['midi_note'].apply(lambda x: x if pd.isnull(x) else i
 gh_df['piano_note'] = (gh_df['midi_note']) - 20 # 20 is the difference between MIDI Note and Piano Note
 
 # create piano frequencies from piano notes, add as new column to gh_df
-gh_df['piano_freq'] = (2**((gh_df['piano_note'] - 49) / 12)) * 440
 
-# round all piano frequencies to integers
-gh_df['piano_freq'] = gh_df['piano_freq'].round(0)
+# create a list of all the piano notes, but substract 1 from each
+all_notes_list = [i - 1 for i in range(1, 89)]
+
+# for each note in all_notes_list, map the note to its frequency in FREQ_LOOKUP_TABLE
+# create a dictionary of piano notes to frequencies
+all_notes_freqs = {note: FREQ_LOOKUP_TABLE[note] for note in all_notes_list}
+
+# put these values back into new column piano_freq in gh_df
+gh_df['piano_freq'] = gh_df['piano_note'].map(all_notes_freqs)
+
+# round all piano frequencies to integers (NO DECIMAL PLACES)
+# gh_df['piano_freq'] = gh_df['piano_freq'].apply(lambda x: x if pd.isnull(x) else int(x))
+# gh_df['piano_freq'] = round(gh_df['piano_freq'])
 
 # determine the range of the piano notes in gh_df from column piano_note
 piano_note_min = gh_df['piano_note'].min()
